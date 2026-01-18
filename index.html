@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>منصة المهندسة أميرة - الحل بالذكاء الاصطناعي</title>
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); display: inline-block; width: 95%; max-width: 600px; }
+        h1 { color: #2c3e50; font-size: 24px; }
+        textarea { width: 90%; padding: 15px; border: 2px solid #eee; border-radius: 10px; margin-bottom: 10px; resize: none; }
+        .camera-section { margin: 15px 0; border: 2px dashed #3498db; padding: 10px; border-radius: 10px; background: #ebf5fb; }
+        button { background: #2ecc71; color: white; padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; }
+        .btn-camera { background: #3498db; }
+        #preview { width: 100%; max-width: 300px; display: none; margin: 10px auto; border-radius: 10px; }
+        #result { margin-top: 25px; text-align: right; padding: 15px; background: #f9f9f9; border-right: 5px solid #2ecc71; display: none; }
+        footer { margin-top: 30px; font-size: 13px; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>مصور المسائل الذكي 📸</h1>
+    <p>بإشراف المهندسة أميرة | Eng. Ameira</p>
+
+    <div class="camera-section">
+        <p>صور المسألة أو اختر صورة من جهازك:</p>
+        <input type="file" id="imageInput" accept="image/*" capture="environment" style="display: none;" onchange="previewImage(event)">
+        <button class="btn-camera" onclick="document.getElementById('imageInput').click()">فتح الكاميرا / اختيار صورة</button>
+        <img id="preview">
+    </div>
+
+    <textarea id="problem" rows="3" placeholder="أو اكتب المسألة هنا..."></textarea>
+    <br>
+    <button id="solveBtn" onclick="solve()">حل الآن ✨</button>
+
+    <div id="result"></div>
+
+    <footer>تم التطوير بواسطة المهندسة أميرة</footer>
+</div>
+
+<script>
+    let base64Image = "";
+
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function() {
+            const img = document.getElementById('preview');
+            img.src = reader.result;
+            img.style.display = "block";
+            base64Image = reader.result.split(',')[1]; // تحويل الصورة لكود يفهمه الذكاء الاصطناعي
+        }
+        reader.readAsDataURL(file);
+    }
+
+    async function solve() {
+        const p = document.getElementById('problem').value;
+        const resDiv = document.getElementById('result');
+        const btn = document.getElementById('solveBtn');
+        
+        resDiv.style.display = "block";
+        resDiv.innerHTML = "جاري التحليل... انتظر قليلاً يا هندسة";
+        btn.disabled = true;
+
+        const apiKey = "AIzaSyA1iPQI6s-_YnHnLem-nrUl9WW6UEA5LXo";
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+        let promptText = p || "حل هذه المسألة الموجودة في الصورة بالتفصيل للطلاب.";
+        
+        let bodyContent = {
+            contents: [{
+                parts: [
+                    { text: promptText }
+                ]
+            }]
+        };
+
+        // إذا وجدت صورة، نضيفها للطلب المرسل لجوجل
+        if (base64Image) {
+            bodyContent.contents[0].parts.push({
+                inline_data: { mime_type: "image/jpeg", data: base64Image }
+            });
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bodyContent)
+            });
+
+            const data = await response.json();
+            const output = data.candidates[0].content.parts[0].text;
+            resDiv.innerHTML = "<h3>الحل المقترح:</h3>" + output.replace(/\n/g, "<br>");
+        } catch (error) {
+            resDiv.innerHTML = "حدث خطأ. تأكد من إعدادات المفتاح والإنترنت.";
+        } finally {
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
