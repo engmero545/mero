@@ -59,10 +59,10 @@
         const btn = document.getElementById('solveBtn');
         
         resDiv.style.display = "block";
-        resDiv.innerHTML = "جاري التحليل... انتظر قليلاً يا هندسة";
+        resDiv.innerHTML = "جاري التحليل... انتظر قليلاً ";
         btn.disabled = true;
 
-        const apiKey = "AIzaSyA1iPQI6s-_YnHnLem-nrUl9WW6UEA5LXo";
+        const apiKey = "AIzaSyAdje4lQzborD8iG0Q_Am_k0ezTIPiTUXE";
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
         let promptText = p || "حل هذه المسألة الموجودة في الصورة بالتفصيل للطلاب.";
@@ -101,4 +101,5 @@
 </script>
 
 </body>
+
 </html>
